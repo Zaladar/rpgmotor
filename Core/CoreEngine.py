@@ -1,13 +1,23 @@
+#1 standard livraries
+
 from random import *
+#2 Third party
+#3 Local
+
+
+
+
 dices = {}
 
 class Dice:
-    def __init__(self, name, sides):
+    def __init__(self, name, sides, mod):
         self.name = name
         self.sides = int(sides)
+        self.mod = int (mod)
 
-
+# här borde finnas decorator som kan applicera mod
     def rolling(self, t):
+        #printout här kanske ej bör finnas?
         print("rolling your dice!")
         res = 0
         i = 0
@@ -61,7 +71,7 @@ class Dice:
 
 
 def DiceBase():
-    pd = [3, 4, 6, 8, 10, 12, 20, 100]
+    pd = [2, 3, 4, 6, 8, 10, 12, 20, 100]
     for i in pd:
         dice = {
             "name": 'd' + str(i),

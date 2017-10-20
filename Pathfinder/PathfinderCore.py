@@ -1,7 +1,12 @@
+#1 Standard library
 from math import *
-import core
+#2 Third party
+#3 Local
+from Pathfinder import CharTemplate, CharTemplate
+from Pathfinder import Skills
+from Core import CoreEngine
 
-#global vars
+#needs a DB
 classdict = {"Barbarian": False,
              "Bard": False,
              "Cleric": False,
@@ -102,13 +107,13 @@ def char_setup(name):
         if q.lower() == "importing":
             print("not ready")
         elif q.lower() == "creating":
-            Character(name, class_setup(classdict.copy()), 1, skills_setup({}),stat_setup([]), saves_setup({}),[])
+            CharTemplate.Character(name, class_setup(classdict.copy()), 1, skills_setup({}), stat_setup([], name), saves_setup({}, name), [])
             cd = input("a character can hold dices that are unique to them, such as class specific abilities or such."
                        " want to create any?")
             if cd.lower() == "yes":
                 nerm = input("what doy ouy wnat to name them to?")
                 side = input("how many sides?")
-                Character.die.append(core.Dice(nerm, side))
+                CharTemplate.die.append(CoreEngine.Dice(nerm, side))
         else:
             print("invalid input")
         check = input("create more?")
@@ -167,7 +172,7 @@ def stat_setup(ls):
                 print("not an valid ability score!")
 
     elif qq == "point buy":
-        p1 = input("what type of fantasy? low, std, high or epic?")
+        p1 = input("what type of fantasy? low, std, high, epic or odd?")
         if p1 == "low":
             p1 = 10
         elif p1 == "std":
@@ -176,9 +181,11 @@ def stat_setup(ls):
             p1 = 20
         elif p1 == "epic":
             p1 = 25
+        elif p1 == "odd":
+            p1 = int(input("how many points can you buy?"))
         else:
-            p1 = input("how many points can you buy?")
-            p1 = int(p1)
+            print("points set tup 10")
+            p1 = 10
         ls = {
             "STR": 10,
             "DEX": 10,
@@ -187,8 +194,7 @@ def stat_setup(ls):
             "WIS": 10,
             "CHA": 10
         }
-        t = True
-        while t:
+        while True:
             print(ls)
             print("points left: " + str(p1))
             q1 = input("add or sub?")
@@ -215,7 +221,7 @@ def stat_setup(ls):
             if p1 <= 0:
                 done = input("are you done? yes/no")
                 if done.lower() == "yes":
-                    t = False
+                    break
                 else:
                     print("ok")
     print("")
@@ -228,9 +234,8 @@ def class_setup(cls):
     print(classdict.keys())
     q = "yes"
     while q.lower() == "yes":
-        cq = input()
-        cls = classdict.copy()
-        if cq.lower() in name.cls:
+        cq = input("pick one of the classes from above")
+        if cq.lower() in cls:
             cls[cq.lower()] = True
             print("added " + cq.lower() + " to classes!")
         else:
@@ -238,7 +243,8 @@ def class_setup(cls):
         q = input("add more classes?")
     return cls
 
-def skills_setup(skills, ):
+def skills_setup(skills, name):
+    # Needs a DB
     skilldct = {
         "acrobatics": "DEX",
         "appraise": "INT",
@@ -300,7 +306,7 @@ def skills_setup(skills, ):
         skills[sfx["skn"]] = Skills(**sfx)
     return skills
 
-def saves_setup(saves):
+def saves_setup(saves, name):
     fort = input("enter the fort saves gained from classes, no bonuses")
     ref = input("enter the ref saves gained from classes, no bonuses")
     will = input("enter the will saves gained from classes, no bonuses")
@@ -310,75 +316,3 @@ def saves_setup(saves):
         "will": int(will) + name.stats["WIZ"]
     }
     return saves
-
-class Character:
-    def __init__(self, name, cls, level, skills, stats, saves, die):
-        self.name = name
-        self.cls = cls
-        self.level = level
-        self.skills = skills
-        self.stats = stats
-        self.saves = saves
-        self.die = die
-
-    #saves, the saves should be a list with several pieces like list of lists.
-    def char_saves_mod(self):
-        sq = input("which save are you changing? (fort, will, ref")
-        if sq in self.saves.keys():
-            print("you can only change modifiers( base, racial etc.")
-            fort = input("enter the fort saves gained from classes, no racial bonuses or similar")
-            ref = input("enter the ref saves gained from classes, no racial bonuses or similar")
-            will = input("enter the will saves gained from classes, no racial bonuses or similar")
-            fm = input("enter all your fort bonuses, no stat mods")
-            rm = input("enter all your fort bonuses, no stat mods")
-            wm = input("enter all your fort bonuses, no stat mods")
-            self.name.saves = {
-                "fort": int(fort) + self.name.stats["CON"] + int(fm),
-                "ref": int(ref) + self.name.stats["DEX"] + int(rm),
-                "will": int(will) + self.name.stats["WIZ"] + int(wm)
-            }
-
-    #char held dices
-    def char_dices_mod(self, character):
-        print("this holds the dice for your character,the dice must already exist")
-        q = "yes"
-        while q.lower() == "yes":
-            d = input("how many sides does your dice have?")
-            if d.lower() in character.die.keys():
-                x = input("give them a name")
-                character.die[x] = dices[d].copy()
-            else:
-                print("not in player die")
-            q = input("add/change more character dices?")
-
-    #skills
-    def char_skills_mod(self, character, q):
-        return character.skills.Skills_mod(character, q)
-
-    def char_stats_mod(self, character, stat, score):
-        if stat in character.stats.keys():
-            character.stats[stat] = score
-            return character.stats[stat]
-        else:
-            return "not in stats"
-
-
-class Skills:
-    def __init__(self, skn, stat, rnk, mod, clss):
-        self.skn = skn
-        self.stat = int(stat)
-        self.rnk = int(rnk)
-        self.mod = int(mod)
-        self.clss = bool
-
-    def Skills_mod(self, charachter, sn, what, var):
-        charachter.skills[sn].what = var
-        return charachter.skills[sn].what
-
-    def summary(self, skn):
-        ssum = self.skn.stat + self.skn.rnk + self.skn.mod
-        if int(self.skn.clss) + (self.skn.rnk / self.skn.rnk) > 1:
-            ssum += 3
-            return ssum
-        else:
-            return ssum
